@@ -24,6 +24,8 @@ contract UniswapV3PoolDeployer is IUniswapV3PoolDeployer {
     /// @param token1 The second token of the pool by address sort order
     /// @param fee The fee collected upon every swap in the pool, denominated in hundredths of a bip
     /// @param tickSpacing The spacing between usable ticks
+    /// 使用salt来指定另一种生成合约地址的方法,最后删除parameters
+    /// UniswapV3PoolDeployer.sol合约创建一个Pool合约，返回Pool合约地址
     function deploy(
         address factory,
         address token0,

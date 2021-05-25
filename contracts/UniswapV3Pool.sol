@@ -27,6 +27,9 @@ import './interfaces/callback/IUniswapV3MintCallback.sol';
 import './interfaces/callback/IUniswapV3SwapCallback.sol';
 import './interfaces/callback/IUniswapV3FlashCallback.sol';
 
+/// UniswapV3Pool合约代表了所有和池有关的操作，一个UniswapV3Pool合约表示唯一一个池，
+/// 不同的池拥有相同的factory地址、不同的token0->token1地址映射、可能相同的换取费用fee与tickSpacing的映射对，
+/// 该池的maxLiquidityPerTick是根据tickSpacing计算而得
 contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     using LowGasSafeMath for uint256;
     using LowGasSafeMath for int256;
@@ -115,10 +118,12 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     }
 
     constructor() {
-        int24 _tickSpacing;
+        int24 _tickSpacing; //构造函数中不能读取immutable值，因此另外创建一个局部变量
+        /// IUniswapV3PoolDeployer(msg.sender) 实例化UniswapV3PoolDeployer合约
         (factory, token0, token1, fee, _tickSpacing) = IUniswapV3PoolDeployer(msg.sender).parameters();
         tickSpacing = _tickSpacing;
 
+        //_tickSpacing只能是10、60、200
         maxLiquidityPerTick = Tick.tickSpacingToMaxLiquidityPerTick(_tickSpacing);
     }
 
@@ -131,12 +136,16 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
     /// @dev Returns the block timestamp truncated to 32 bits, i.e. mod 2**32. This method is overridden in tests.
     function _blockTimestamp() internal view virtual returns (uint32) {
-        return uint32(block.timestamp); // truncation is desired
+        return uint32(block.timestamp); // truncation is desired 要求截断
     }
 
     /// @dev Get the pool's balance of token0
     /// @dev This function is gas optimized to avoid a redundant extcodesize check in addition to the returndatasize
+    //该函数经过气体优化，除了returndatasize之外，还避免了多余的extcodesize检查
     /// check
+    // 查看余额是一个view函数，所以调用的是staticcall
+    // encodeWithSelector函数对函数选择器和参数进行abi编码，返回bytes；第一个参数IERC20Minimal.balanceOf.selector表示函数选择器，4字节长
+    //返回的data表示balanceOf函数的返回值：余额
     function balance0() private view returns (uint256) {
         (bool success, bytes memory data) =
             token0.staticcall(abi.encodeWithSelector(IERC20Minimal.balanceOf.selector, address(this)));
@@ -166,7 +175,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
             uint32 secondsInside
         )
     {
-        checkTicks(tickLower, tickUpper);
+        checkTicks(tickLower, tickUpper); //检查大小是否符合给定限制
 
         int56 tickCumulativeLower;
         int56 tickCumulativeUpper;

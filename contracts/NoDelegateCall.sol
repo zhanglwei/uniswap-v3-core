@@ -15,6 +15,8 @@ abstract contract NoDelegateCall {
 
     /// @dev Private method is used instead of inlining into modifier because modifiers are copied into each method,
     ///     and the use of immutable means the address bytes are copied in every place the modifier is used.
+    /// 之所以不直接将require语句放在modifier中，而是将其放在private的函数中，
+    /// 是因为modifier会被复制到每个方法中，使用immutable变量也意味着这个地址会被复制到每一个使用该modifier的地方。
     function checkNotDelegateCall() private view {
         require(address(this) == original);
     }

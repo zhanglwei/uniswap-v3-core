@@ -15,6 +15,7 @@ interface IUniswapV3Factory {
     /// @param fee The fee collected upon every swap in the pool, denominated in hundredths of a bip
     /// @param tickSpacing The minimum number of ticks between initialized ticks
     /// @param pool The address of the created pool
+    /// 这个fee代表了这个池中每次交换收取的费用
     event PoolCreated(
         address indexed token0,
         address indexed token1,
@@ -24,7 +25,7 @@ interface IUniswapV3Factory {
     );
 
     /// @notice Emitted when a new fee amount is enabled for pool creation via the factory
-    /// @param fee The enabled fee, denominated in hundredths of a bip
+    /// @param fee 启用费用，以百分之几为单位
     /// @param tickSpacing The minimum number of ticks between initialized ticks for pools created with the given fee
     event FeeAmountEnabled(uint24 indexed fee, int24 indexed tickSpacing);
 
